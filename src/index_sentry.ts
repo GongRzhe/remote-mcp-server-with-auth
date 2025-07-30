@@ -6,6 +6,9 @@ import { Props } from "./types";
 
 import { closeDb } from "./database/connection";
 import { registerDatabaseToolsWithSentry } from "./tools/database-tools-sentry";
+import { registerGitHubToolsWithSentry } from "./tools/github-tools-sentry";
+import { registerGmailToolsWithSentry } from "./tools/gmail-tools-sentry";
+import { registerBraveSearchToolsWithSentry } from "./tools/brave-search-tools-sentry";
 import { GitHubHandler } from "./auth/github-handler";
 import { GoogleHandler } from "./auth/google-handler";
 import { Auth0Handler } from "./auth/auth0-handler";
@@ -101,7 +104,7 @@ function getSentryConfig(env: Env) {
 
 export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 	server = new McpServer({
-		name: "PostgreSQL Database MCP Server",
+		name: "Database, GitHub, Gmail & Brave Search MCP Server",
 		version: "1.0.0",
 	});
 
@@ -131,6 +134,9 @@ export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 
 		// Register all tools with Sentry instrumentation
 		registerDatabaseToolsWithSentry(this.server, this.env, this.props);
+		registerGitHubToolsWithSentry(this.server, this.env, this.props);
+		registerGmailToolsWithSentry(this.server, this.env, this.props);
+		registerBraveSearchToolsWithSentry(this.server, this.env, this.props);
 	}
 }
 

@@ -67,7 +67,7 @@ async function redirectToGoogle(
 			location: getUpstreamAuthorizeUrl({
 				client_id: (env as any).GOOGLE_CLIENT_ID,
 				redirect_uri: new URL("/google/callback", request.url).href,
-				scope: "openid profile email",
+				scope: "openid profile email https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly",
 				state: state,
 				upstream_url: "https://accounts.google.com/o/oauth2/v2/auth",
 			}) + "&code_challenge=" + codeChallenge + "&code_challenge_method=S256",
@@ -92,30 +92,50 @@ app.get("/callback", async (c) => {
 		return c.text("Invalid state", 400);
 	}
 
+	// Validate the authorization code
+	const authCode = c.req.query("code");
+	if (!authCode) {
+		console.error("Missing authorization code in callback");
+		return c.text("Missing authorization code. Please try again.", 400);
+	}
+
 	// Exchange the code for an access token using PKCE
+	const redirectUri = new URL("/google/callback", c.req.url).href;
+	console.log("Google OAuth callback - redirect URI:", redirectUri);
+	console.log("Google OAuth callback - code verifier present:", !!oauthReqInfo.codeVerifier);
+	
 	const tokenRequestData = {
 		grant_type: 'authorization_code',
 		client_id: (c.env as any).GOOGLE_CLIENT_ID,
 		client_secret: (c.env as any).GOOGLE_CLIENT_SECRET,
-		code: c.req.query("code"),
-		redirect_uri: new URL("/google/callback", c.req.url).href,
+		code: authCode,
+		redirect_uri: redirectUri,
 		code_verifier: oauthReqInfo.codeVerifier
 	};
 
-	const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/x-www-form-urlencoded",
-		},
-		body: new URLSearchParams(tokenRequestData).toString(),
-	});
+	let tokenResponse;
+	let tokenData;
+	
+	try {
+		tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: new URLSearchParams(tokenRequestData).toString(),
+		});
 
-	if (!tokenResponse.ok) {
-		console.log(await tokenResponse.text());
-		return c.text("Failed to fetch access token", 500);
+		if (!tokenResponse.ok) {
+			const errorText = await tokenResponse.text();
+			console.error("Google token exchange failed:", errorText);
+			return c.text(`Failed to fetch access token: ${tokenResponse.status}`, 500);
+		}
+
+		tokenData = await tokenResponse.json();
+	} catch (error) {
+		console.error("Network error during token exchange:", error);
+		return c.text("Network error during authentication. Please try again.", 500);
 	}
-
-	const tokenData = await tokenResponse.json();
 	const accessToken = tokenData.access_token;
 
 	if (!accessToken) {
@@ -123,17 +143,27 @@ app.get("/callback", async (c) => {
 	}
 
 	// Fetch the user info from Google
-	const userResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-		},
-	});
+	let userResponse;
+	let userData;
+	
+	try {
+		userResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+			},
+		});
 
-	if (!userResponse.ok) {
-		return c.text("Failed to fetch user info", 500);
+		if (!userResponse.ok) {
+			const errorText = await userResponse.text();
+			console.error("Google user info fetch failed:", errorText);
+			return c.text(`Failed to fetch user info: ${userResponse.status}`, 500);
+		}
+
+		userData = await userResponse.json();
+	} catch (error) {
+		console.error("Network error during user info fetch:", error);
+		return c.text("Network error while fetching user information. Please try again.", 500);
 	}
-
-	const userData = await userResponse.json();
 	const { id, email, verified_email, name, given_name, family_name, picture } = userData;
 
 	// Use email as login for Google (since Google doesn't have a "login" field like GitHub)

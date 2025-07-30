@@ -40,7 +40,7 @@
 	},
 	"dev": {
 		"port": 8792
-	}
+	},
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -58,7 +58,13 @@
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-	// "vars": { "MY_VARIABLE": "production_value" },
+	"vars": { 
+		"GMAIL_API_VERSION": "v1",
+		"GMAIL_SCOPES": "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.profile",
+		"BRAVE_SEARCH_API_URL": "https://api.search.brave.com/res/v1",
+		"BRAVE_SEARCH_DEFAULT_COUNTRY": "US",
+		"BRAVE_SEARCH_DEFAULT_LANGUAGE": "en"
+	},
 	/**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/

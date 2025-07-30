@@ -49,6 +49,26 @@ COOKIE_ENCRYPTION_KEY=<your_random_encryption_key>
 DATABASE_URL=postgresql://username:password@localhost:5432/database_name
 
 # ===========================================
+# THIRD-PARTY API KEYS
+# ===========================================
+
+# Brave Search API Key (for web and news search tools)
+# Sign up at: https://api.search.brave.com/
+# Free tier: 2,000 queries/month, Pro: 20,000+ queries/month
+BRAVE_SEARCH_API_KEY=<your_brave_search_api_key>
+
+# ===========================================
+# GMAIL CONFIGURATION
+# ===========================================
+# Gmail tools use Google OAuth credentials (GOOGLE_CLIENT_ID/SECRET above)
+# Make sure to enable Gmail API and add these scopes in Google Cloud Console:
+# - https://www.googleapis.com/auth/gmail.send
+# - https://www.googleapis.com/auth/gmail.readonly  
+# - https://www.googleapis.com/auth/userinfo.profile
+# 
+# No additional environment variables needed - Gmail uses Google OAuth
+
+# ===========================================
 # Optional Configuration
 # ===========================================
 
@@ -57,3 +77,44 @@ DATABASE_URL=postgresql://username:password@localhost:5432/database_name
 # Create a new project in Sentry, then for the platform pick Cloudflare Workers (search in the top right)
 SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
 NODE_ENV=development
+
+# ===========================================
+# TOOL-SPECIFIC NOTES
+# ===========================================
+
+# DATABASE TOOLS:
+# - listTables: Available to all authenticated users
+# - queryDatabase: Read-only SQL queries for all users  
+# - executeDatabase: Write operations (restricted to ALLOWED_USERNAMES)
+
+# GITHUB TOOLS:
+# - searchRepositories: Search GitHub repositories
+# - getRepositoryInfo: Get detailed repository information
+# Requires GitHub authentication and valid GitHub access token
+
+# GMAIL TOOLS:
+# - sendEmail: Send emails with security validation and anti-phishing checks
+# - getEmailProfile: Get Gmail account information
+# Requires Google OAuth with Gmail scopes
+
+# BRAVE SEARCH TOOLS:
+# - webSearch: Comprehensive web search with filtering
+# - newsSearch: News-specific search with freshness controls
+# Requires Brave Search API key
+
+# ===========================================
+# SECURITY CONFIGURATION
+# ===========================================
+
+# User Access Control:
+# Edit ALLOWED_USERNAMES in tool files to control write access:
+# - database-tools-sentry.ts: Controls database write operations
+# - gmail-tools-sentry.ts: Controls email sending (currently all authenticated users)
+# - github-tools-sentry.ts: Controls GitHub operations (currently all authenticated users)
+# - brave-search-tools-sentry.ts: Controls search operations (currently all authenticated users)
+
+# Rate Limiting (built into tools):
+# - Database: Conservative limits for connection pooling
+# - GitHub: Respects GitHub API rate limits
+# - Gmail: 5 emails/minute, 50 read operations/minute  
+# - Brave Search: 30 web searches/minute, 20 news searches/minute

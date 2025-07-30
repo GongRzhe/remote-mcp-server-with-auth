@@ -80,6 +80,127 @@ export const ExecuteDatabaseSchema = {
     .describe("SQL command to execute (INSERT, UPDATE, DELETE, CREATE, etc.)"),
 };
 
+// GitHub tool schemas
+export const SearchRepositoriesSchema = {
+  query: z
+    .string()
+    .min(1, "Search query cannot be empty")
+    .max(256, "Search query too long (max 256 characters)")
+    .describe("Search query to find GitHub repositories"),
+  limit: z
+    .number()
+    .int()
+    .positive()
+    .max(100)
+    .optional()
+    .describe("Maximum number of repositories to return (default: 10, max: 100)"),
+};
+
+export const GetRepositoryInfoSchema = {
+  repository: z
+    .string()
+    .min(1, "Repository cannot be empty")
+    .regex(/^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/, "Repository must be in format 'owner/repo'")
+    .describe("GitHub repository in format 'owner/repo'"),
+};
+
+// Gmail tool schemas
+export const SendEmailSchema = {
+  to: z
+    .array(z.string().email("Invalid email address"))
+    .min(1, "At least one recipient is required")
+    .max(25, "Too many 'To' recipients (max 25)")
+    .describe("List of recipient email addresses"),
+  cc: z
+    .array(z.string().email("Invalid CC email address"))
+    .max(25, "Too many 'CC' recipients (max 25)")
+    .optional()
+    .describe("List of CC recipient email addresses"),
+  bcc: z
+    .array(z.string().email("Invalid BCC email address"))
+    .max(25, "Too many 'BCC' recipients (max 25)")
+    .optional()
+    .describe("List of BCC recipient email addresses"),
+  subject: z
+    .string()
+    .min(1, "Email subject cannot be empty")
+    .max(998, "Subject too long (max 998 characters)")
+    .describe("Email subject line"),
+  body: z
+    .string()
+    .min(1, "Email body cannot be empty")
+    .max(10485760, "Email body too large (max 10MB)")
+    .describe("Email body content (plain text or HTML)"),
+  isHtml: z
+    .boolean()
+    .optional()
+    .describe("Whether the email body is HTML format (default: false)"),
+};
+
+export const GetEmailProfileSchema = {};
+
+// Brave Search tool schemas
+export const WebSearchSchema = {
+  query: z
+    .string()
+    .min(2, "Search query too short (minimum 2 characters)")
+    .max(400, "Search query too long (max 400 characters)")
+    .describe("Search query for web search"),
+  count: z
+    .number()
+    .int()
+    .positive()
+    .max(20)
+    .optional()
+    .describe("Number of search results to return (default: 10, max: 20)"),
+  country: z
+    .string()
+    .length(2)
+    .optional()
+    .describe("Country code for search results (e.g., 'US', 'GB', 'DE')"),
+  language: z
+    .string()
+    .length(2)
+    .optional()
+    .describe("Language code for search (e.g., 'en', 'es', 'fr')"),
+  safesearch: z
+    .enum(['strict', 'moderate', 'off'])
+    .optional()
+    .describe("Safe search setting (default: moderate)"),
+  freshness: z
+    .enum(['pd', 'pw', 'pm', 'py'])
+    .optional()
+    .describe("Search freshness: pd=past day, pw=past week, pm=past month, py=past year"),
+  result_filter: z
+    .enum(['web', 'news', 'videos'])
+    .optional()
+    .describe("Filter results by type (default: web)"),
+};
+
+export const NewsSearchSchema = {
+  query: z
+    .string()
+    .min(2, "Search query too short (minimum 2 characters)")
+    .max(400, "Search query too long (max 400 characters)")
+    .describe("Search query for news search"),
+  count: z
+    .number()
+    .int()
+    .positive()
+    .max(20)
+    .optional()
+    .describe("Number of news results to return (default: 10, max: 20)"),
+  country: z
+    .string()
+    .length(2)
+    .optional()
+    .describe("Country code for news results (e.g., 'US', 'GB', 'DE')"),
+  freshness: z
+    .enum(['pd', 'pw', 'pm'])
+    .optional()
+    .describe("News freshness: pd=past day, pw=past week, pm=past month"),
+};
+
 // MCP response types
 export interface McpTextContent {
   type: "text";
