@@ -7,6 +7,17 @@ export type Props = {
   name: string;
   email: string;
   accessToken: string;
+  picture?: string;
+  verified_email?: boolean;
+  sub?: string; // Auth0/Keycloak user ID
+  updated_at?: string; // Auth0/Keycloak last update timestamp
+  preferred_username?: string; // Keycloak preferred username
+  given_name?: string; // Keycloak/Google given name
+  family_name?: string; // Keycloak/Google family name
+  user_id?: string; // Custom OAuth user ID
+  scope?: string; // OAuth scopes granted
+  client_id?: string; // OAuth client ID
+  provider?: string; // OAuth provider identifier
 };
 
 // Extended environment with OAuth provider

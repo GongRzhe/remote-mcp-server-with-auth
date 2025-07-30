@@ -1,6 +1,45 @@
-GITHUB_CLIENT_ID=<your github client id>
-GITHUB_CLIENT_SECRET=<your github client secret>
-COOKIE_ENCRYPTION_KEY=<your cookie cookie encryption key>
+# ===========================================
+# Multi-Provider OAuth Configuration
+# ===========================================
+# Configure only the provider(s) you want to use.
+# You don't need to configure all providers.
+
+# GitHub OAuth (Optional)
+# Get credentials from: https://github.com/settings/developers
+GITHUB_CLIENT_ID=<your_github_client_id>
+GITHUB_CLIENT_SECRET=<your_github_client_secret>
+
+# Google OAuth (Optional)
+# Get credentials from: https://console.cloud.google.com/
+GOOGLE_CLIENT_ID=<your_google_client_id>.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=<your_google_client_secret>
+
+# Auth0 OAuth (Optional)
+# Get credentials from: https://manage.auth0.com/
+AUTH0_DOMAIN=<your-tenant>.us.auth0.com
+AUTH0_CLIENT_ID=<your_auth0_client_id>
+AUTH0_CLIENT_SECRET=<your_auth0_client_secret>
+AUTH0_AUDIENCE=<your_auth0_audience>  # Optional: Management API audience
+
+# Keycloak OAuth (Optional)
+# Configure in your Keycloak Admin Console
+KEYCLOAK_DOMAIN=https://your.keycloak.server
+KEYCLOAK_REALM=<your_realm_name>
+KEYCLOAK_CLIENT_ID=<your_keycloak_client_id>
+KEYCLOAK_CLIENT_SECRET=<your_keycloak_client_secret>  # Optional for public clients
+
+# Custom OAuth Server (Optional)
+# Use the included OAuth 2.1 server or your own
+CUSTOM_OAUTH_URL=http://localhost:3000
+CUSTOM_OAUTH_CLIENT_ID=demo-client
+
+# ===========================================
+# Required Configuration
+# ===========================================
+
+# Cookie encryption key (Required for all providers)
+# Generate with: openssl rand -hex 32
+COOKIE_ENCRYPTION_KEY=<your_random_encryption_key>
 
 # Database Connection String
 # This should be a PostgreSQL connection string with full read/write permissions
@@ -9,7 +48,11 @@ COOKIE_ENCRYPTION_KEY=<your cookie cookie encryption key>
 # For production, use Hyperdrive: https://developers.cloudflare.com/hyperdrive/
 DATABASE_URL=postgresql://username:password@localhost:5432/database_name
 
-# Optional: Add Sentry DSN for local development monitoring
+# ===========================================
+# Optional Configuration
+# ===========================================
+
+# Sentry monitoring (Optional)
 # Get your DSN from https://sentry.io/settings/projects/your-project/keys/
 # Create a new project in Sentry, then for the platform pick Cloudflare Workers (search in the top right)
 SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
