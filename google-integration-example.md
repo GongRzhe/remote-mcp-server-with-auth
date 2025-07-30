@@ -84,6 +84,16 @@ export default new OAuthProvider({
    - For local development: `http://localhost:8788/google/callback`
    - For production: `https://your-worker.workers.dev/google/callback`
 
+### ⚠️ Important Callback URL Update
+As of the latest update, the generic `/callback` handler has been **removed** to eliminate callback routing errors. Each OAuth provider now handles its own specific callback endpoint:
+- **Google**: `/google/callback` ✅ (already correctly configured above)
+- **GitHub**: `/github/callback` 
+- **Auth0**: `/auth0/callback`
+- **Custom OAuth**: `/custom/callback`
+- **Keycloak**: `/keycloak/callback`
+
+This change eliminates complex callback detection logic and prevents 403/500 routing errors that occurred when callbacks were incorrectly routed between providers.
+
 ## 5. Key Differences from GitHub
 
 ### User Data Structure

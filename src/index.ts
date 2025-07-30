@@ -85,87 +85,8 @@ authRouter.get("/authorize", async (c) => {
   return c.text("No OAuth providers configured. Please check your environment variables.", 500);
 });
 
-// Root callback handler - routes to the correct provider based on callback parameters
-authRouter.get("/callback", async (c) => {
-  const code = c.req.query("code");
-  const scope = c.req.query("scope");
-  const sessionState = c.req.query("session_state");
-  const iss = c.req.query("iss");
-  const authuser = c.req.query("authuser");
-  const env = c.env as any;
-  
-  if (!code) {
-    return c.text("Missing authorization code", 400);
-  }
-  
-  let providerPath = "";
-  
-  // Detect provider based on callback parameters and environment
-  if (iss && (iss.includes("keycloak") || iss.includes("localhost:8080"))) {
-    // Keycloak callback - has iss parameter with keycloak domain
-    providerPath = "/keycloak";
-  } else if (sessionState && iss) {
-    // Also likely Keycloak (has both session_state and iss)
-    providerPath = "/keycloak";
-  } else if (scope && scope.includes("googleapis.com")) {
-    // Google OAuth callback - scope contains googleapis.com URLs
-    providerPath = "/google";
-  } else if (authuser !== undefined) {
-    // Google also sometimes has authuser parameter
-    providerPath = "/google";
-  } else if (scope && scope.includes("openid") && env.AUTH0_DOMAIN) {
-    // Auth0 callback - has openid scope and Auth0 is configured
-    providerPath = "/auth0";
-  } else if (code.length > 60 && env.CUSTOM_OAUTH_URL) {
-    // Custom OAuth server has very long codes (SHA-256 based, typically 64+ chars)
-    providerPath = "/custom";
-  } else if (env.GITHUB_CLIENT_ID && !env.AUTH0_DOMAIN) {
-    // GitHub if configured and Auth0 is not configured
-    providerPath = "/github";
-  } else if (env.GITHUB_CLIENT_ID && code.length <= 20) {
-    // GitHub codes are typically shorter (around 20 chars)
-    providerPath = "/github";
-  } else if (env.AUTH0_DOMAIN && env.AUTH0_CLIENT_ID) {
-    // Auth0 fallback - only if Auth0 is configured and no other provider matches
-    providerPath = "/auth0";
-  }
-  
-  // If we still can't determine, try to detect from configured providers
-  if (!providerPath) {
-    const configuredProviders = [];
-    if (env.GITHUB_CLIENT_ID) configuredProviders.push("/github");
-    if (env.GOOGLE_CLIENT_ID) configuredProviders.push("/google");
-    if (env.AUTH0_DOMAIN && env.AUTH0_CLIENT_ID) configuredProviders.push("/auth0");
-    if (env.KEYCLOAK_DOMAIN && env.KEYCLOAK_CLIENT_ID) configuredProviders.push("/keycloak");
-    if (env.CUSTOM_OAUTH_URL) configuredProviders.push("/custom");
-    
-    if (configuredProviders.length === 1) {
-      // If only one provider is configured, use that
-      providerPath = configuredProviders[0];
-    }
-  }
-  
-  if (!providerPath) {
-    console.error("Unable to determine OAuth provider from callback parameters:", {
-      code: code?.substring(0, 20) + "...",
-      scope,
-      sessionState: sessionState ? "present" : "missing",
-      iss,
-      authuser
-    });
-    return c.text("Unable to determine OAuth provider from callback. Please check your configuration.", 400);
-  }
-  
-  // Construct the provider-specific callback URL
-  const url = new URL(c.req.url);
-  const callbackUrl = new URL(`${providerPath}/callback`, url.origin);
-  callbackUrl.search = url.search; // Preserve all query parameters
-  
-  console.log(`Routing callback to ${providerPath} provider: ${callbackUrl.toString()}`);
-  
-  // Redirect to the provider-specific callback handler
-  return c.redirect(callbackUrl.toString());
-});
+// Note: Generic callback handler removed - each provider now handles its own callbacks directly
+// This eliminates complex routing logic and prevents callback routing errors
 
 export class MyMCP extends McpAgent<Env, Record<string, never>, Props> {
 	server = new McpServer({

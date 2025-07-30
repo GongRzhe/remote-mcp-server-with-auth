@@ -57,7 +57,7 @@ async function redirectToGithub(
 			...headers,
 			location: getUpstreamAuthorizeUrl({
 				client_id: (env as any).GITHUB_CLIENT_ID,
-				redirect_uri: new URL("/callback", request.url).href,
+				redirect_uri: new URL("/github/callback", request.url).href,
 				scope: "read:user",
 				state: btoa(JSON.stringify(oauthReqInfo)),
 				upstream_url: "https://github.com/login/oauth/authorize",
@@ -87,7 +87,7 @@ app.get("/callback", async (c) => {
 		client_id: (c.env as any).GITHUB_CLIENT_ID,
 		client_secret: (c.env as any).GITHUB_CLIENT_SECRET,
 		code: c.req.query("code"),
-		redirect_uri: new URL("/callback", c.req.url).href,
+		redirect_uri: new URL("/github/callback", c.req.url).href,
 		upstream_url: "https://github.com/login/oauth/access_token",
 	});
 	if (errResponse) return errResponse;

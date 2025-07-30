@@ -66,7 +66,7 @@ async function redirectToCustomOAuth(
 	// Build custom OAuth authorization URL with PKCE
 	const authUrl = getUpstreamAuthorizeUrl({
 		client_id: (env as any).CUSTOM_OAUTH_CLIENT_ID || 'demo-client',
-		redirect_uri: new URL("/callback", request.url).href,
+		redirect_uri: new URL("/custom/callback", request.url).href,
 		scope: "read write",
 		state: state,
 		upstream_url: `${customOAuthUrl}/oauth/authorize`,
@@ -118,7 +118,7 @@ app.get("/callback", async (c) => {
 			grant_type: 'authorization_code',
 			client_id: (c.env as any).CUSTOM_OAUTH_CLIENT_ID || 'demo-client',
 			code: code,
-			redirect_uri: new URL("/callback", c.req.url).href,
+			redirect_uri: new URL("/custom/callback", c.req.url).href,
 			code_verifier: codeVerifier
 		};
 

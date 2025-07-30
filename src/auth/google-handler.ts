@@ -66,7 +66,7 @@ async function redirectToGoogle(
 			...headers,
 			location: getUpstreamAuthorizeUrl({
 				client_id: (env as any).GOOGLE_CLIENT_ID,
-				redirect_uri: new URL("/callback", request.url).href,
+				redirect_uri: new URL("/google/callback", request.url).href,
 				scope: "openid profile email",
 				state: state,
 				upstream_url: "https://accounts.google.com/o/oauth2/v2/auth",
@@ -98,7 +98,7 @@ app.get("/callback", async (c) => {
 		client_id: (c.env as any).GOOGLE_CLIENT_ID,
 		client_secret: (c.env as any).GOOGLE_CLIENT_SECRET,
 		code: c.req.query("code"),
-		redirect_uri: new URL("/callback", c.req.url).href,
+		redirect_uri: new URL("/google/callback", c.req.url).href,
 		code_verifier: oauthReqInfo.codeVerifier
 	};
 

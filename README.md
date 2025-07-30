@@ -162,7 +162,7 @@ NODE_ENV=development
    - Click "New OAuth App"
    - **Application name**: `MCP Server (Local Development)`
    - **Homepage URL**: `http://localhost:8792`
-   - **Authorization callback URL**: `http://localhost:8792/callback`
+   - **Authorization callback URL**: `http://localhost:8792/github/callback`
    - Click "Register application"
 
 2. **Copy your credentials** to `.dev.vars`:
@@ -179,7 +179,7 @@ NODE_ENV=development
    - Enable the Google+ API
    - Go to "Credentials" → "Create Credentials" → "OAuth client ID"
    - **Application type**: Web application
-   - **Authorized redirect URIs**: `http://localhost:8792/callback`
+   - **Authorized redirect URIs**: `http://localhost:8792/google/callback`
 
 2. **Copy your credentials** to `.dev.vars`:
    ```bash
@@ -193,7 +193,7 @@ NODE_ENV=development
    - Go to [Auth0 Dashboard](https://manage.auth0.com/)
    - Applications → Create Application
    - **Application Type**: Regular Web Applications
-   - **Allowed Callback URLs**: `http://localhost:8792/callback`
+   - **Allowed Callback URLs**: `http://localhost:8792/auth0/callback`
    - **Allowed Web Origins**: `http://localhost:8792`
 
 2. **Copy your credentials** to `.dev.vars`:
@@ -211,7 +211,7 @@ NODE_ENV=development
    - Clients → Create client
    - **Client ID**: `mcp-server`
    - **Client authentication**: Enable for confidential clients
-   - **Valid redirect URIs**: `http://localhost:8792/callback`
+   - **Valid redirect URIs**: `http://localhost:8792/keycloak/callback`
 
 2. **Copy your credentials** to `.dev.vars`:
    ```bash
@@ -296,16 +296,16 @@ When you access the main `/authorize` endpoint, the server:
 2. **Multi-Provider Mode**: If multiple providers are configured, shows a clean selection page
 3. **No Configuration**: Returns helpful error message if no providers are set up
 
-#### **Intelligent Callback Routing**
-All OAuth providers callback to the unified `/callback` endpoint, which intelligently routes to the correct provider handler based on:
+#### **⚠️ Important Callback URL Update**
+As of the latest update, the generic `/callback` handler has been **removed** to eliminate callback routing errors. Each OAuth provider now handles its own specific callback endpoint:
 
-- **Keycloak**: Detects `iss` parameter with Keycloak domain or `session_state` parameter
-- **Google**: Detects `scope` containing `googleapis.com` or `authuser` parameter  
-- **Auth0**: Detects `openid` scope with Auth0 configuration present
-- **Custom OAuth**: Detects very long authorization codes (60+ characters)
-- **GitHub**: Default fallback when other providers don't match
+- **GitHub**: `/github/callback` ✅ (updated)
+- **Google**: `/google/callback` ✅ (updated)
+- **Auth0**: `/auth0/callback` ✅ (updated)
+- **Keycloak**: `/keycloak/callback` ✅ (updated)
+- **Custom OAuth**: `/custom/callback` ✅ (updated)
 
-This means **all providers use the same callback URL** (`/callback`) while maintaining correct routing.
+This change eliminates complex callback detection logic and prevents 403/500 routing errors that occurred when callbacks were incorrectly routed between providers.
 
 ### Testing with MCP Inspector
 
@@ -361,20 +361,20 @@ For **each OAuth provider** you want to use in production:
 
 **GitHub OAuth App**:
 - Homepage URL: `https://mcp-oauth.<your-subdomain>.workers.dev`
-- Authorization callback URL: `https://mcp-oauth.<your-subdomain>.workers.dev/callback`
+- Authorization callback URL: `https://mcp-oauth.<your-subdomain>.workers.dev/github/callback`
 
 **Google OAuth Client**:
-- Authorized redirect URIs: `https://mcp-oauth.<your-subdomain>.workers.dev/callback`
+- Authorized redirect URIs: `https://mcp-oauth.<your-subdomain>.workers.dev/google/callback`
 
 **Auth0 Application**:
-- Allowed Callback URLs: `https://mcp-oauth.<your-subdomain>.workers.dev/callback`
+- Allowed Callback URLs: `https://mcp-oauth.<your-subdomain>.workers.dev/auth0/callback`
 - Allowed Web Origins: `https://mcp-oauth.<your-subdomain>.workers.dev`
 
 **Keycloak Client**:
-- Valid redirect URIs: `https://mcp-oauth.<your-subdomain>.workers.dev/callback`
+- Valid redirect URIs: `https://mcp-oauth.<your-subdomain>.workers.dev/keycloak/callback`
 
 **Custom OAuth Server**:
-- Update `oauth-model.js` to include: `https://mcp-oauth.<your-subdomain>.workers.dev/callback`
+- Update `oauth-model.js` to include: `https://mcp-oauth.<your-subdomain>.workers.dev/custom/callback`
 
 #### Set Production Secrets
 
@@ -624,13 +624,13 @@ The MCP server implements a sophisticated multi-provider OAuth architecture that
 - PKCE (Proof Key for Code Exchange) implementation for OAuth 2.1 compliance
 
 **Provider Routing System**: Uses Hono routing to direct authentication requests:
-- `/github/authorize` → GitHub OAuth handler → redirects to GitHub → callbacks to `/callback`
-- `/google/authorize` → Google OAuth handler → redirects to Google → callbacks to `/callback`  
-- `/auth0/authorize` → Auth0 OAuth handler → redirects to Auth0 → callbacks to `/callback`
-- `/keycloak/authorize` → Keycloak OAuth handler → redirects to Keycloak → callbacks to `/callback`
-- `/custom/authorize` → Custom OAuth handler → redirects to Custom OAuth → callbacks to `/callback`
+- `/github/authorize` → GitHub OAuth handler → redirects to GitHub → callbacks to `/github/callback`
+- `/google/authorize` → Google OAuth handler → redirects to Google → callbacks to `/google/callback`  
+- `/auth0/authorize` → Auth0 OAuth handler → redirects to Auth0 → callbacks to `/auth0/callback`
+- `/keycloak/authorize` → Keycloak OAuth handler → redirects to Keycloak → callbacks to `/keycloak/callback`
+- `/custom/authorize` → Custom OAuth handler → redirects to Custom OAuth → callbacks to `/custom/callback`
 
-**Unified Callback**: All providers use the same `/callback` endpoint, with the OAuth state parameter containing information about which provider to route the callback to.
+**Provider-Specific Callbacks**: Each provider uses its own dedicated callback endpoint, eliminating the need for complex callback detection and routing logic.
 
 **Cookie-Based Approval System**: Once a user approves access, signed cookies enable automatic re-authorization for future requests, providing a seamless user experience across all providers.
 

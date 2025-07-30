@@ -69,7 +69,7 @@ async function redirectToAuth0(
 	// Build Auth0 authorization URL with PKCE
 	const authUrl = getUpstreamAuthorizeUrl({
 		client_id: (env as any).AUTH0_CLIENT_ID,
-		redirect_uri: new URL("/callback", request.url).href,
+		redirect_uri: new URL("/auth0/callback", request.url).href,
 		scope: "openid profile email",
 		state: state,
 		upstream_url: `https://${auth0Domain}/authorize`,
@@ -135,7 +135,7 @@ app.get("/callback", async (c) => {
 			client_id: (c.env as any).AUTH0_CLIENT_ID,
 			client_secret: (c.env as any).AUTH0_CLIENT_SECRET,
 			code: code,
-			redirect_uri: new URL("/callback", c.req.url).href,
+			redirect_uri: new URL("/auth0/callback", c.req.url).href,
 			code_verifier: codeVerifier
 		};
 

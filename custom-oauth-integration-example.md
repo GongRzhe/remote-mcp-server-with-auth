@@ -386,9 +386,21 @@ curl -X POST "http://localhost:3000/oauth/token" \
   -d "grant_type=refresh_token&refresh_token=YOUR_REFRESH_TOKEN&client_id=demo-client"
 ```
 
-## 15. Testing with All Providers
+## 15. ⚠️ Important Callback URL Update
 
-You can now test all five providers in parallel:
+As of the latest update, the generic `/callback` handler has been **removed** to eliminate callback routing errors. Each OAuth provider now handles its own specific callback endpoint:
+
+- **GitHub**: `/github/callback` ✅ (updated)
+- **Google**: `/google/callback` ✅ (updated)
+- **Auth0**: `/auth0/callback` ✅ (already correct)
+- **Keycloak**: `/keycloak/callback` ✅ (updated)
+- **Custom OAuth**: `/custom/callback` ✅ (updated)
+
+This change eliminates complex callback detection logic and prevents 403/500 routing errors that occurred when callbacks were incorrectly routed between providers.
+
+### Testing with All Providers
+
+You can now test all five providers in parallel with their correct callback URLs:
 
 ```bash
 # Test GitHub

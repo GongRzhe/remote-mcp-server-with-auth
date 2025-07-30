@@ -123,6 +123,16 @@ For production environments, follow the [Keycloak Server Installation Guide](htt
      - `https://your-worker.workers.dev/keycloak/callback` (for production)
    - Valid post logout redirect URIs:
      - `http://localhost:8788/`
+
+### ⚠️ Important Callback URL Update
+As of the latest update, the generic `/callback` handler has been **removed** to eliminate callback routing errors. Each OAuth provider now handles its own specific callback endpoint:
+- **Keycloak**: `/keycloak/callback` ✅ (already correctly configured above)
+- **GitHub**: `/github/callback` 
+- **Google**: `/google/callback`
+- **Auth0**: `/auth0/callback`
+- **Custom OAuth**: `/custom/callback`
+
+This change eliminates complex callback detection logic and prevents 403/500 routing errors that occurred when callbacks were incorrectly routed between providers.
      - `https://your-worker.workers.dev/`
    - Web origins: `*` (or specify your domains)
 

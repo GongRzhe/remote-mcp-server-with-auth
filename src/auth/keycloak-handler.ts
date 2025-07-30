@@ -79,7 +79,7 @@ async function redirectToKeycloak(
 	
 	const authUrl = getUpstreamAuthorizeUrl({
 		client_id: (env as any).KEYCLOAK_CLIENT_ID,
-		redirect_uri: new URL("/callback", request.url).href,
+		redirect_uri: new URL("/keycloak/callback", request.url).href,
 		scope: "openid profile email",
 		state: state,
 		upstream_url: keycloakAuthUrl,
@@ -135,7 +135,7 @@ app.get("/callback", async (c) => {
 			grant_type: 'authorization_code',
 			client_id: (c.env as any).KEYCLOAK_CLIENT_ID,
 			code: code,
-			redirect_uri: new URL("/callback", c.req.url).href,
+			redirect_uri: new URL("/keycloak/callback", c.req.url).href,
 			code_verifier: codeVerifier
 		};
 

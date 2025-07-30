@@ -85,6 +85,16 @@ export default new OAuthProvider({
   - For local development: `http://localhost:8788`
   - For production: `https://your-worker.workers.dev`
 
+### ⚠️ Important Callback URL Update
+As of the latest update, the generic `/callback` handler has been **removed** to eliminate callback routing errors. Each OAuth provider now handles its own specific callback endpoint:
+- **Auth0**: `/auth0/callback` ✅ (already correctly configured)
+- **GitHub**: `/github/callback` 
+- **Google**: `/google/callback`
+- **Custom OAuth**: `/custom/callback`
+- **Keycloak**: `/keycloak/callback`
+
+This change eliminates complex callback detection logic and prevents 403/500 routing errors that occurred when callbacks were incorrectly routed between providers.
+
 ### Advanced Settings
 - **Grant Types**: Enable "Authorization Code" and "Refresh Token"
 - **OIDC Conformant**: Should be enabled (default for new applications)
