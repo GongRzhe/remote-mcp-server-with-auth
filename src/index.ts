@@ -116,17 +116,18 @@ authRouter.get("/callback", async (c) => {
   } else if (scope && scope.includes("openid") && env.AUTH0_DOMAIN) {
     // Auth0 callback - has openid scope and Auth0 is configured
     providerPath = "/auth0";
-  } else if (env.AUTH0_DOMAIN && env.AUTH0_CLIENT_ID) {
-    // Auth0 fallback - if Auth0 is configured and no other provider matches
-    // Auth0 codes can be various lengths, so check for Auth0 config first
-    providerPath = "/auth0";
   } else if (code.length > 60 && env.CUSTOM_OAUTH_URL) {
     // Custom OAuth server has very long codes (SHA-256 based, typically 64+ chars)
-    // Increased threshold to avoid conflict with Auth0
     providerPath = "/custom";
-  } else if (env.GITHUB_CLIENT_ID) {
-    // Default to GitHub if configured and no other provider detected
+  } else if (env.GITHUB_CLIENT_ID && !env.AUTH0_DOMAIN) {
+    // GitHub if configured and Auth0 is not configured
     providerPath = "/github";
+  } else if (env.GITHUB_CLIENT_ID && code.length <= 20) {
+    // GitHub codes are typically shorter (around 20 chars)
+    providerPath = "/github";
+  } else if (env.AUTH0_DOMAIN && env.AUTH0_CLIENT_ID) {
+    // Auth0 fallback - only if Auth0 is configured and no other provider matches
+    providerPath = "/auth0";
   }
   
   // If we still can't determine, try to detect from configured providers
